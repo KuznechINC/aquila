@@ -56,4 +56,14 @@ namespace Aquila
         }
         return output;
     }
+
+    std::vector<double> MelFilterBank::applyAll(const std::vector<double>& framePSpec) const
+    {
+        std::vector<double> output(size(), 0.0);
+        for (std::size_t i = 0; i < size(); ++i)
+        {
+            output[i] = m_filters[i].apply(framePSpec);
+        }
+        return output;
+    }
 }

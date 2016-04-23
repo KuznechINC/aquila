@@ -39,6 +39,7 @@ namespace Aquila
                           std::size_t N);
 
         double apply(const SpectrumType& dataSpectrum) const;
+        double apply(const std::vector<double>& dataPSpec) const;
 
         /**
          * Converts frequency from linear to Mel scale.

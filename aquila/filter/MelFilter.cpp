@@ -97,6 +97,15 @@ namespace Aquila
         return value;
     }
 
+    double MelFilter::apply(const std::vector<double>& dataPSpec) const
+    {
+        double value = 0.0;
+        for (std::size_t i = 0; i < dataPSpec.size(); ++i)
+        {
+            value += dataPSpec[i] * m_spectrum[i];
+        }
+        return value;
+    }
     /**
      * Generates a vector of values shaped as a triangular filter.
      *

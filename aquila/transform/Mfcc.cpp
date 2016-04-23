@@ -17,9 +17,12 @@
 
 #include "Mfcc.h"
 #include "Dct.h"
+#include "Lifter.h"
 #include "../source/SignalSource.h"
 #include "../filter/MelFilterBank.h"
 
+#include <algorithm>
+#include <cmath>
 namespace Aquila
 {
     /**
@@ -34,10 +37,35 @@ namespace Aquila
     {
         auto spectrum = m_fft->fft(source.toArray());
 
+        std::vector<double> pspec = periodogram(spectrum);
+        double eng = std::accumulate(pspec.begin(), pspec.end(), 0.0);
+
         Aquila::MelFilterBank bank(source.getSampleFrequency(), m_inputSize);
-        auto filterOutput = bank.applyAll(spectrum);
+        auto filterOutput = bank.applyAll(pspec);
+
+        std::transform(filterOutput.begin(), filterOutput.end(), filterOutput.begin(), 
+                      [this](double fv)->double
+                      {
+                          return fv > 0? std::log(fv) : std::log(m_eps); 
+                      }
+                     );
 
         Aquila::Dct dct;
-        return dct.dct(filterOutput, numFeatures);
+        std::vector<double> dcted = dct.dct(filterOutput, numFeatures);
+
+        Aquila::Lifter lifter(numFeatures, m_lifterCoeff);
+        std::vector<double> lifted = lifter.apply(dcted);
+        lifted[0] = eng > 0? std::log(eng) : std::log(m_eps);
+
+        return lifted;
+    }
+
+    std::vector<double> Mfcc::periodogram(const SpectrumType& spectrum)
+    {
+        std::vector<double> pspec(spectrum.size());
+        for(std::size_t i = 0; i < pspec.size(); i++)
+            pspec[i] = 1/double(m_inputSize) * std::pow(std::abs(spectrum[i]), 2);
+
+        return pspec;
     }
 }

@@ -167,7 +167,12 @@ namespace Aquila
          */
         virtual const SampleType* toArray() const
         {
-            return &m_data[0];
+            return m_data.data();
+        }
+
+        virtual std::vector<SampleType> data() const
+        {
+            return m_data;
         }
 
         /**
