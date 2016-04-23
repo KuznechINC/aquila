@@ -36,6 +36,7 @@ namespace Aquila
                       std::size_t bankSize = 24);
 
         std::vector<double> applyAll(const SpectrumType &frameSpectrum) const;
+        std::vector<double> applyAll(const std::vector<double>& framePSpec) const;
 
         /**
          * Returns sample frequency of all filters.

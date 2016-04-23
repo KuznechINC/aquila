@@ -22,6 +22,7 @@
 #include "FftFactory.h"
 #include <cstddef>
 #include <vector>
+#include <limits>
 
 namespace Aquila
 {
@@ -59,8 +60,9 @@ namespace Aquila
          *
          * @param inputSize input length (common to all inputs)
          */
-        Mfcc(std::size_t inputSize):
-            m_inputSize(inputSize), m_fft(FftFactory::getFft(inputSize))
+        Mfcc(std::size_t inputSize, double lifterCoeff = 22):
+            m_inputSize(inputSize), m_fft(FftFactory::getFft(inputSize)),
+            m_lifterCoeff(lifterCoeff), m_eps(std::numeric_limits<double>::epsilon())
         {
         }
 
@@ -68,10 +70,14 @@ namespace Aquila
                                       std::size_t numFeatures = 12);
 
     private:
+
+        std::vector<double> periodogram(const SpectrumType& sprectrum);
         /**
          * Number of samples in each processed input.
          */
         const std::size_t m_inputSize;
+        const double m_lifterCoeff;
+        const double m_eps;
 
         /**
          * FFT calculator.

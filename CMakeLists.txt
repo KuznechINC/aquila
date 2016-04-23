@@ -88,6 +88,7 @@ set(Aquila_HEADERS
     aquila/transform/AquilaFft.h
     aquila/transform/OouraFft.h
     aquila/transform/FftFactory.h
+    aquila/transform/Lifter.h
     aquila/transform/Dct.h
     aquila/transform/Mfcc.h
     aquila/transform/Spectrogram.h
@@ -121,6 +122,7 @@ set(Aquila_SOURCES
     aquila/transform/AquilaFft.cpp
     aquila/transform/OouraFft.cpp
     aquila/transform/FftFactory.cpp
+    aquila/transform/Lifter.cpp
     aquila/transform/Dct.cpp
     aquila/transform/Mfcc.cpp
     aquila/transform/Spectrogram.cpp
@@ -158,7 +160,8 @@ endif()
 
 
 if(CMAKE_COMPILER_IS_GNUCXX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x -fPIC -g")
+    set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x -fPIC -g")
 endif()
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
@@ -169,9 +172,9 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 endif()
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -Wall -Wextra -Wcast-qual -Wcast-align -Wno-unused-parameter -Wmissing-include-dirs -Wpointer-arith -Wredundant-decls -Wshadow -fprofile-arcs -ftest-coverage")
-    include(CodeCoverage)
-    setup_target_for_coverage(coverage aquila_test htmlcov)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -Wall")
+#include(CodeCoverage)
+#   setup_target_for_coverage(coverage aquila_test htmlcov)
 endif()
 
 
