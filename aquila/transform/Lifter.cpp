@@ -10,7 +10,7 @@ namespace Aquila
         m_numCoeffs(numCoeffs), m_liftC(liftC)
     {
         for(std::size_t c = 0; c < m_numCoeffs; c++)
-            m_lc.push_back(std::sin(PI*c/m_numCoeffs));
+            m_lc.push_back(1 + (m_liftC/2)*std::sin(PI*c/m_liftC));
     }
 
     std::vector<double> Lifter::apply(const std::vector<double>& feat)

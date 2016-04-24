@@ -129,8 +129,8 @@ namespace Aquila
         m_spectrum.resize(N, 0.0);
 
         // find spectral peak positions corresponding to frequencies
-        std::size_t minPos = static_cast<std::size_t>(N * minFreq / m_sampleFrequency);
-        std::size_t maxPos = static_cast<std::size_t>(N * maxFreq / m_sampleFrequency);
+        std::size_t minPos = static_cast<std::size_t>((N+1) * minFreq / m_sampleFrequency);
+        std::size_t maxPos = static_cast<std::size_t>((N+1) * maxFreq / m_sampleFrequency);
         // limit maxPos not to write out of bounds of vector storage
         maxPos = std::min(maxPos, N - 1);
         if (maxPos <= minPos) {

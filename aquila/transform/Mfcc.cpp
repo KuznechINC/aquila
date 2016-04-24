@@ -40,7 +40,13 @@ namespace Aquila
         std::vector<double> pspec = periodogram(spectrum);
         double eng = std::accumulate(pspec.begin(), pspec.end(), 0.0);
 
-        Aquila::MelFilterBank bank(source.getSampleFrequency(), m_inputSize);
+        FrequencyType lowF = 0;
+        FrequencyType highF = source.getSampleFrequency()/2;
+        FrequencyType melLowF = Aquila::MelFilter::linearToMel(lowF);
+        FrequencyType melHighF = Aquila::MelFilter::linearToMel(highF);
+        FrequencyType filterWidth = 2 * (melHighF - melLowF) / (m_numFilters+1);
+
+        Aquila::MelFilterBank bank(source.getSampleFrequency(), m_inputSize, filterWidth, m_numFilters);
         auto filterOutput = bank.applyAll(pspec);
 
         std::transform(filterOutput.begin(), filterOutput.end(), filterOutput.begin(), 
@@ -62,8 +68,9 @@ namespace Aquila
 
     std::vector<double> Mfcc::periodogram(const SpectrumType& spectrum)
     {
-        std::vector<double> pspec(spectrum.size());
-        for(std::size_t i = 0; i < pspec.size(); i++)
+        std::size_t numCoeffs = static_cast<std::size_t>(std::ceil(spectrum.size()/2));
+        std::vector<double> pspec(numCoeffs);
+        for(std::size_t i = 0; i < numCoeffs; i++)
             pspec[i] = 1/double(m_inputSize) * std::pow(std::abs(spectrum[i]), 2);
 
         return pspec;
