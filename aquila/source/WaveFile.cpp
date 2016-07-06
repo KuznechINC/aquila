@@ -38,6 +38,8 @@ namespace Aquila
         m_handler.readHeader(m_header);
         if(m_partSize > m_header.WaveSize)
             m_partSize = m_header.WaveSize;
+
+        m_sampleFrequency = m_header.SampFreq;
     }
 
     /**
@@ -91,7 +93,6 @@ namespace Aquila
             channel_data.push_back(l_chan);
             channel_data.push_back(r_chan);
         }
-        m_sampleFrequency = m_header.SampFreq;
 
         return channel_data;
     }
