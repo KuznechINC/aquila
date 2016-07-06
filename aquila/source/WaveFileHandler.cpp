@@ -29,7 +29,7 @@ namespace Aquila
      * @param filename .wav file name
      */
     WaveFileHandler::WaveFileHandler(const std::string& filename):
-        m_filename(filename)
+        m_filename(filename), m_bytes_read(0)
     {
     }
 
@@ -78,10 +78,14 @@ namespace Aquila
     void WaveFileHandler::readPart(const WaveHeader& header, ChannelType& leftChannel,
         ChannelType& rightChannel, size_t partSize)
     {
-        short* data = new short[partSize/2];
-        m_fs_handle.read((char*)data, partSize);
+        size_t to_read = partSize;
+        if(partSize >= header.WaveSize - m_bytes_read)
+            to_read = header.WaveSize - m_bytes_read;
+        short* data = new short[(size_t)std::floor(to_read/2)];
+        m_fs_handle.read((char*)data, to_read);
+        m_bytes_read += to_read;
 
-        unsigned int channelSize = partSize/header.BytesPerSamp;
+        unsigned int channelSize = to_read/header.BytesPerSamp;
         decodeData(header, data, channelSize, leftChannel, rightChannel);
 
         // clear the buffer

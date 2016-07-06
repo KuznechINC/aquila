@@ -75,6 +75,7 @@ namespace Aquila
          */
         const std::string m_filename;
         std::fstream m_fs_handle;
+        long m_bytes_read;
     };
 }
 

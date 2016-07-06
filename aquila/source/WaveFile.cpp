@@ -36,6 +36,8 @@ namespace Aquila
     {
         //load(m_filename, channel);
         m_handler.readHeader(m_header);
+        if(m_partSize > m_header.WaveSize)
+            m_partSize = m_header.WaveSize;
     }
 
     /**
@@ -119,7 +121,7 @@ namespace Aquila
 
     unsigned int WaveFile::getNumParts() const
     {
-        return static_cast<unsigned int>(m_header.WaveSize/
-                static_cast<double>(m_partSize));
+        return static_cast<unsigned int>(
+                std::ceil(m_header.WaveSize/static_cast<double>(m_partSize)));
     }
 }
