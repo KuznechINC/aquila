@@ -93,7 +93,7 @@ set(Aquila_HEADERS
     aquila/transform/Mfcc.h
     aquila/transform/Spectrogram.h
     aquila/tools/TextPlot.h
-)
+    aquila/source/WaveHeader.h)
 
 # library sources
 set(Aquila_SOURCES
@@ -127,7 +127,7 @@ set(Aquila_SOURCES
     aquila/transform/Mfcc.cpp
     aquila/transform/Spectrogram.cpp
     aquila/tools/TextPlot.cpp
-)
+    )
 
 # SFML wrappers
 if(SFML_FOUND)

@@ -20,6 +20,9 @@
 
 #include "../global.h"
 #include "SignalSource.h"
+#include "WaveFileHandler.h"
+#include "WaveHeader.h"
+//#include "WaveFileHandler.h"
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -27,30 +30,6 @@
 
 namespace Aquila
 {
-    /**
-     * Which channel to use when reading stereo recordings.
-     */
-    enum StereoChannel { LEFT, RIGHT };
-
-    /**
-     * .wav file header structure.
-     */
-    struct WaveHeader
-    {
-        char   RIFF[4];
-        std::uint32_t DataLength;
-        char   WAVE[4];
-        char   fmt_[4];
-        std::uint32_t SubBlockLength;
-        std::uint16_t formatTag;
-        std::uint16_t Channels;
-        std::uint32_t SampFreq;
-        std::uint32_t BytesPerSec;
-        std::uint16_t BytesPerSamp;
-        std::uint16_t BitsPerSamp;
-        char   data[4];
-        std::uint32_t WaveSize;
-    };
 
     /**
      * Wave file data access.
@@ -80,9 +59,13 @@ namespace Aquila
 
         explicit WaveFile(const std::string& filename,
                           StereoChannel channel = LEFT);
+        explicit WaveFile(const std::string& filename,
+                          size_t part_size, // file part to be read in bytes
+                          StereoChannel channel = LEFT);
         ~WaveFile();
 
         void load(const std::string& filename, StereoChannel channel);
+        void load_next(StereoChannel channel);
         static void save(const SignalSource& source, const std::string& file);
 
         /**
@@ -170,6 +153,8 @@ namespace Aquila
 
         unsigned int getAudioLength() const;
 
+        unsigned int getNumParts() const;
+
     private:
         /**
          * Full path of the .wav file.
@@ -180,6 +165,9 @@ namespace Aquila
          * Header structure.
          */
         WaveHeader m_header;
+
+        size_t m_partSize;
+        WaveFileHandler m_handler;
     };
 }
 

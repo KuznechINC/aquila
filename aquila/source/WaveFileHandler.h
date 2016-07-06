@@ -20,9 +20,9 @@
 
 #include "../global.h"
 #include "SignalSource.h"
-#include "WaveFile.h"
 #include <cstddef>
 #include <string>
+#include <fstream>
 
 namespace Aquila
 {
@@ -39,20 +39,29 @@ namespace Aquila
     public:
         WaveFileHandler(const std::string& filename);
 
+        void readHeader(WaveHeader& header);
         void readHeaderAndChannels(WaveHeader& header,
-            WaveFile::ChannelType& leftChannel, WaveFile::ChannelType& rightChannel);
+            ChannelType& leftChannel,
+            ChannelType& rightChannel);
+        void readPart(const WaveHeader& header,
+            ChannelType& leftChannel,
+            ChannelType& rightChannel,
+            size_t partSize);
 
         void save(const SignalSource& source);
 
-        static void decode16bit(WaveFile::ChannelType& channel,
-            short* data, std::size_t channelSize);
-        static void decode16bitStereo(WaveFile::ChannelType& leftChannel,
-            WaveFile::ChannelType& rightChannel, short* data, std::size_t channelSize);
+        void decodeData(const WaveHeader& header, short* data, size_t channelSize,
+                        ChannelType& leftChannel, ChannelType& rightChannel);
 
-        static void decode8bit(WaveFile::ChannelType& channel,
+        static void decode16bit(ChannelType& channel,
             short* data, std::size_t channelSize);
-        static void decode8bitStereo(WaveFile::ChannelType& leftChannel,
-            WaveFile::ChannelType& rightChannel, short* data, std::size_t channelSize);
+        static void decode16bitStereo(ChannelType& leftChannel,
+            ChannelType& rightChannel, short* data, std::size_t channelSize);
+
+        static void decode8bit(ChannelType& channel,
+            short* data, std::size_t channelSize);
+        static void decode8bitStereo(ChannelType& leftChannel,
+            ChannelType& rightChannel, short* data, std::size_t channelSize);
 
         static void encode16bit(const SignalSource& source, short* data, std::size_t dataSize);
         static void encode8bit(const SignalSource& source, short* data, std::size_t dataSize);
@@ -64,7 +73,8 @@ namespace Aquila
         /**
          * Destination or source file.
          */
-        std::string m_filename;
+        const std::string m_filename;
+        std::fstream m_fs_handle;
     };
 }
 

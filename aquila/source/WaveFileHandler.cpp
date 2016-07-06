@@ -16,10 +16,10 @@
  */
 
 #include "WaveFileHandler.h"
-#include "WaveFile.h"
+#include "WaveHeader.h"
+#include "../Exceptions.h"
 #include <cstdint>
 #include <cstring>
-#include <fstream>
 
 namespace Aquila
 {
@@ -40,21 +40,56 @@ namespace Aquila
      * @param leftChannel reference to left audio channel
      * @param rightChannel reference to right audio channel
      */
+
+    void WaveFileHandler::readHeader(WaveHeader &header)
+    {
+        if(m_fs_handle.is_open()) 
+            return; // if file is opened - then header had been already read
+
+        m_fs_handle.open(m_filename.c_str(), std::ios::in | std::ios::binary);
+        if(!m_fs_handle.is_open())
+            throw new Aquila::Exception("Wrong file name");
+        m_fs_handle.read((char*)(&header), sizeof(WaveHeader));
+        std::string hdr_riff({header.RIFF[0], header.RIFF[1], header.RIFF[2], header.RIFF[3]});
+        std::string riff("RIFF");
+        if(hdr_riff != riff)
+            throw new Aquila::Exception("Is not a RIFF file");
+    }
+
     void WaveFileHandler::readHeaderAndChannels(WaveHeader &header,
-        WaveFile::ChannelType& leftChannel, WaveFile::ChannelType& rightChannel)
+        ChannelType& leftChannel, ChannelType& rightChannel)
     {
         // first we read header from the stream
         // then as we know now the data size, we create a temporary
         // buffer and read raw data into that buffer
-        std::fstream fs;
-        fs.open(m_filename.c_str(), std::ios::in | std::ios::binary);
-        fs.read((char*)(&header), sizeof(WaveHeader));
+        readHeader(header);
         short* data = new short[header.WaveSize/2];
-        fs.read((char*)data, header.WaveSize);
-        fs.close();
+        m_fs_handle.read((char*)data, header.WaveSize);
+        m_fs_handle.close();
 
         // initialize data channels (using right channel only in stereo mode)
         unsigned int channelSize = header.WaveSize/header.BytesPerSamp;
+        decodeData(header, data, channelSize, leftChannel, rightChannel);
+
+        // clear the buffer
+        delete [] data;
+    }
+
+    void WaveFileHandler::readPart(const WaveHeader& header, ChannelType& leftChannel,
+        ChannelType& rightChannel, size_t partSize)
+    {
+        short* data = new short[partSize/2];
+        m_fs_handle.read((char*)data, partSize);
+
+        unsigned int channelSize = partSize/header.BytesPerSamp;
+        decodeData(header, data, channelSize, leftChannel, rightChannel);
+
+        // clear the buffer
+        delete [] data;
+    }
+
+    void WaveFileHandler::decodeData(const WaveHeader& header, short* data, size_t channelSize, ChannelType& leftChannel, ChannelType& rightChannel)
+    {
         leftChannel.resize(channelSize);
         if (2 == header.Channels)
             rightChannel.resize(channelSize);
@@ -74,9 +109,6 @@ namespace Aquila
             else
                 decode8bit(leftChannel, data, channelSize);
         }
-
-        // clear the buffer
-        delete [] data;
     }
 
     /**
@@ -151,7 +183,7 @@ namespace Aquila
      * @param data raw data buffer
      * @param channelSize expected number of samples in channel
      */
-    void WaveFileHandler::decode16bit(WaveFile::ChannelType& channel, short* data, std::size_t channelSize)
+    void WaveFileHandler::decode16bit(ChannelType& channel, short* data, std::size_t channelSize)
     {
         for (std::size_t i = 0; i < channelSize; ++i)
         {
@@ -167,8 +199,8 @@ namespace Aquila
      * @param data raw data buffer
      * @param channelSize expected number of samples (same for both channels)
      */
-    void WaveFileHandler::decode16bitStereo(WaveFile::ChannelType& leftChannel,
-        WaveFile::ChannelType& rightChannel, short* data, std::size_t channelSize)
+    void WaveFileHandler::decode16bitStereo(ChannelType& leftChannel,
+        ChannelType& rightChannel, short* data, std::size_t channelSize)
     {
         for (std::size_t i = 0; i < channelSize; ++i)
         {
@@ -184,7 +216,7 @@ namespace Aquila
      * @param data raw data buffer
      * @param channelSize expected number of samples in channel
      */
-    void WaveFileHandler::decode8bit(WaveFile::ChannelType& channel, short* data, std::size_t channelSize)
+    void WaveFileHandler::decode8bit(ChannelType& channel, short* data, std::size_t channelSize)
     {
         // low byte and high byte of a 16b word
         unsigned char lb, hb;
@@ -204,8 +236,8 @@ namespace Aquila
      * @param data raw data buffer
      * @param channelSize expected number of samples (same for both channels)
      */
-    void WaveFileHandler::decode8bitStereo(WaveFile::ChannelType& leftChannel,
-        WaveFile::ChannelType& rightChannel, short* data, std::size_t channelSize)
+    void WaveFileHandler::decode8bitStereo(ChannelType& leftChannel,
+        ChannelType& rightChannel, short* data, std::size_t channelSize)
     {
         // low byte and high byte of a 16b word
         unsigned char lb, hb;

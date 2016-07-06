@@ -65,6 +65,8 @@ namespace Aquila
      * Spectrum type - a vector of complex values.
      */
     typedef std::vector<ComplexType> SpectrumType;
+
+    typedef std::vector<SampleType> ChannelType;
 }
 
 #endif // GLOBAL_H

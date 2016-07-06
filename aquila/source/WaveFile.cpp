@@ -16,7 +16,6 @@
  */
 
 #include "WaveFile.h"
-#include "WaveFileHandler.h"
 
 namespace Aquila
 {
@@ -27,9 +26,16 @@ namespace Aquila
      * @param channel LEFT or RIGHT (the default setting is LEFT)
      */
     WaveFile::WaveFile(const std::string& filename, StereoChannel channel):
-        SignalSource(), m_filename(filename)
+        SignalSource(), m_filename(filename), m_handler(filename)
     {
         load(m_filename, channel);
+    }
+
+    WaveFile::WaveFile(const std::string& filename, size_t part_size, StereoChannel channel):
+        SignalSource(), m_filename(filename), m_partSize(part_size), m_handler(filename)
+    {
+        //load(m_filename, channel);
+        m_handler.readHeader(m_header);
     }
 
     /**
@@ -56,14 +62,30 @@ namespace Aquila
         m_filename = filename;
         m_data.clear();
         ChannelType dummy;
-        WaveFileHandler handler(m_filename);
+        //WaveFileHandler handler(m_filename);
         if (LEFT == channel)
         {
-            handler.readHeaderAndChannels(m_header, m_data, dummy);
+            m_handler.readHeaderAndChannels(m_header, m_data, dummy);
         }
         else
         {
-            handler.readHeaderAndChannels(m_header, dummy, m_data);
+            m_handler.readHeaderAndChannels(m_header, dummy, m_data);
+        }
+        m_sampleFrequency = m_header.SampFreq;
+    }
+
+    void WaveFile::load_next(StereoChannel channel)
+    {
+        m_data.clear();
+        ChannelType dummy;
+        //WaveFileHandler handler(m_filename);
+        if (LEFT == channel)
+        {
+            m_handler.readPart(m_header, m_data, dummy, m_partSize);
+        }
+        else
+        {
+            m_handler.readPart(m_header, dummy, m_data, m_partSize);
         }
         m_sampleFrequency = m_header.SampFreq;
     }
@@ -89,5 +111,11 @@ namespace Aquila
     {
         return static_cast<unsigned int>(m_header.WaveSize /
                 static_cast<double>(m_header.BytesPerSec) * 1000);
+    }
+
+    unsigned int WaveFile::getNumParts() const
+    {
+        return static_cast<unsigned int>(m_header.WaveSize/
+                static_cast<double>(m_partSize));
     }
 }
