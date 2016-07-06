@@ -65,7 +65,7 @@ namespace Aquila
         ~WaveFile();
 
         void load(const std::string& filename, StereoChannel channel);
-        void load_next(StereoChannel channel);
+        std::vector<std::vector<double>> load_next();
         static void save(const SignalSource& source, const std::string& file);
 
         /**

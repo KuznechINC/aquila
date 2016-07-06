@@ -74,20 +74,24 @@ namespace Aquila
         m_sampleFrequency = m_header.SampFreq;
     }
 
-    void WaveFile::load_next(StereoChannel channel)
+    std::vector<std::vector<double>> WaveFile::load_next()
     {
-        m_data.clear();
-        ChannelType dummy;
-        //WaveFileHandler handler(m_filename);
-        if (LEFT == channel)
+        std::vector<std::vector<double>> channel_data;
+        ChannelType l_chan;
+        ChannelType r_chan;
+        m_handler.readPart(m_header, l_chan, r_chan, m_partSize);
+        if (m_header.Channels == 1)
         {
-            m_handler.readPart(m_header, m_data, dummy, m_partSize);
+            channel_data.push_back(l_chan);
         }
-        else
+        else if (m_header.Channels == 2)
         {
-            m_handler.readPart(m_header, dummy, m_data, m_partSize);
+            channel_data.push_back(l_chan);
+            channel_data.push_back(r_chan);
         }
         m_sampleFrequency = m_header.SampFreq;
+
+        return channel_data;
     }
 
     /**
