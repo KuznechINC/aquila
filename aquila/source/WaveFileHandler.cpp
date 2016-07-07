@@ -41,6 +41,13 @@ namespace Aquila
      * @param rightChannel reference to right audio channel
      */
 
+    bool eq(const char c_str[], const std::string& pat)
+    {
+        for(size_t i = 0; i < pat.size(); i++)
+            if(c_str[i] != pat[i])
+                return false;
+        return true;
+    }
     void WaveFileHandler::readHeader(WaveHeader &header)
     {
         if(m_fs_handle.is_open()) 
@@ -49,11 +56,20 @@ namespace Aquila
         m_fs_handle.open(m_filename.c_str(), std::ios::in | std::ios::binary);
         if(!m_fs_handle.is_open())
             throw new Aquila::Exception("Wrong file name");
-        m_fs_handle.read((char*)(&header), sizeof(WaveHeader));
-        std::string hdr_riff({header.RIFF[0], header.RIFF[1], header.RIFF[2], header.RIFF[3]});
-        std::string riff("RIFF");
-        if(hdr_riff != riff)
+
+        m_fs_handle.read((char*)(&header), sizeof(WaveHeader)-sizeof(std::uint32_t)-4);
+        std::string riff_pat("RIFF");
+        if(!eq(header.RIFF, riff_pat))
             throw new Aquila::Exception("Is not a RIFF file");
+
+        std::string data_pat("data");
+        m_fs_handle.read(header.data, sizeof(header.data));
+        while (!eq(header.data, data_pat))
+        {
+            m_fs_handle.seekg(m_fs_handle.tellg()-3);
+            m_fs_handle.read(header.data, sizeof(header.data));
+        }
+        m_fs_handle.read((char*)(&header.WaveSize), sizeof(header.WaveSize));
     }
 
     void WaveFileHandler::readHeaderAndChannels(WaveHeader &header,
