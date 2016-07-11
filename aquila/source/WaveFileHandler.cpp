@@ -20,6 +20,7 @@
 #include "../Exceptions.h"
 #include <cstdint>
 #include <cstring>
+#include <omp.h>
 
 namespace Aquila
 {
@@ -189,6 +190,7 @@ namespace Aquila
      */
     void WaveFileHandler::decode16bit(ChannelType& channel, short* data, std::size_t channelSize)
     {
+        #pragma omp parallel for
         for (std::size_t i = 0; i < channelSize; ++i)
         {
             channel[i] = data[i];
@@ -206,6 +208,7 @@ namespace Aquila
     void WaveFileHandler::decode16bitStereo(ChannelType& leftChannel,
         ChannelType& rightChannel, short* data, std::size_t channelSize)
     {
+        #pragma omp parallel for
         for (std::size_t i = 0; i < channelSize; ++i)
         {
             leftChannel[i] = data[2*i];
@@ -224,6 +227,7 @@ namespace Aquila
     {
         // low byte and high byte of a 16b word
         unsigned char lb, hb;
+        #pragma omp parallel for private(lb) private(hb)
         for (std::size_t i = 0; i < channelSize; ++i)
         {
             splitBytes(data[i / 2], lb, hb);
@@ -245,6 +249,7 @@ namespace Aquila
     {
         // low byte and high byte of a 16b word
         unsigned char lb, hb;
+        #pragma omp parallel for private(lb) private(hb)
         for (std::size_t i = 0; i < channelSize; ++i)
         {
             splitBytes(data[i / 2], lb, hb);
@@ -265,6 +270,7 @@ namespace Aquila
      */
     void WaveFileHandler::encode16bit(const SignalSource& source, short* data, std::size_t dataSize)
     {
+        #pragma omp parallel for
         for (std::size_t i = 0; i < dataSize; ++i)
         {
             short sample = static_cast<short>(source.sample(i));
@@ -281,6 +287,7 @@ namespace Aquila
      */
     void WaveFileHandler::encode8bit(const SignalSource& source, short* data, std::size_t dataSize)
     {
+        #pragma omp parallel for
         for (std::size_t i = 0; i < dataSize; ++i)
         {
             unsigned char sample1 = static_cast<unsigned char>(source.sample(2 * i) + 128);
