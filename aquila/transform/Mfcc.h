@@ -67,7 +67,10 @@ namespace Aquila
         }
 
         std::vector<double> calculate(const SignalSource& source,
-                                      std::size_t numFeatures = 12);
+                                      std::size_t numFeatures = 12,
+                                      size_t cur_frame = -1,
+                                      size_t debug_frame = 10000
+                                      );
 
     private:
 

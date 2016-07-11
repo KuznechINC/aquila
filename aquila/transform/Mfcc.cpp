@@ -23,6 +23,9 @@
 
 #include <algorithm>
 #include <cmath>
+#include <iostream>
+#include <opencv2/core/core.hpp>
+
 namespace Aquila
 {
     /**
@@ -33,9 +36,22 @@ namespace Aquila
      * @return vector of MFCC features of length numFeatures
      */
     std::vector<double> Mfcc::calculate(const SignalSource &source,
-                                        std::size_t numFeatures)
+                                        std::size_t numFeatures,
+                                        size_t cur_frame,
+                                        size_t debug_frame)
     {
-        auto spectrum = m_fft->fft(source.toArray());
+        //auto spectrum = m_fft->fft(source.toArray());
+
+        cv::Mat inp(cv::Mat::zeros(m_inputSize, 1, CV_64F));
+        const int n = std::min(source.length(), m_inputSize);
+        for(int i = 0; i < n; i++)
+            inp.at<double>(i, 0) = source.toArray()[i];
+
+        cv::Mat res(std::ceil(m_inputSize/2), 2, CV_64FC1);
+        cv::dft(inp, res, cv::DFT_COMPLEX_OUTPUT);
+        SpectrumType spectrum;
+        for(int i = 0; i < res.rows; i++)
+            spectrum.push_back(std::complex<double>(res.at<double>(i,0), res.at<double>(i,1)));
 
         std::vector<double> pspec = periodogram(spectrum);
         double eng = std::accumulate(pspec.begin(), pspec.end(), 0.0);
@@ -44,7 +60,7 @@ namespace Aquila
         FrequencyType highF = source.getSampleFrequency()/2;
         FrequencyType melLowF = Aquila::MelFilter::linearToMel(lowF);
         FrequencyType melHighF = Aquila::MelFilter::linearToMel(highF);
-        FrequencyType filterWidth = 2 * (melHighF - melLowF) / (m_numFilters+1);
+        FrequencyType filterWidth = 2*(melHighF - melLowF) / (double)(m_numFilters+1);
 
         Aquila::MelFilterBank bank(source.getSampleFrequency(), m_inputSize, filterWidth, m_numFilters);
         auto filterOutput = bank.applyAll(pspec);
