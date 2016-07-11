@@ -44,8 +44,8 @@ endif()
 ##########Open MP
 find_package(OpenMP REQUIRED)
 if (OPENMP_FOUND)
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS} -fPIC")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -fPIC")
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
 find_package( OpenCV REQUIRED )
@@ -194,7 +194,7 @@ endif()
 ################################################################################
 
 # main Aquila library
-add_library(Aquila SHARED ${Aquila_HEADERS} ${Aquila_SOURCES})
+add_library(Aquila STATIC ${Aquila_HEADERS} ${Aquila_SOURCES})
 
 # linking with extra libs
 target_link_libraries(Aquila ${Aquila_LIBRARIES_TO_LINK_WITH})
