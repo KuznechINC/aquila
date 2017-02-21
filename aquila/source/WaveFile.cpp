@@ -26,12 +26,12 @@ namespace Aquila
      * @param channel LEFT or RIGHT (the default setting is LEFT)
      */
     WaveFile::WaveFile(const std::string& filename, StereoChannel channel):
-        SignalSource(), m_filename(filename), m_handler(filename)
+        SignalSource(), m_filename(filename), m_channel(channel), m_partSize(0), m_handler(filename)
     {
     }
 
     WaveFile::WaveFile(const std::string& filename, size_t part_size, StereoChannel channel):
-        SignalSource(), m_filename(filename), m_partSize(part_size), m_handler(filename)
+        SignalSource(), m_filename(filename), m_channel(channel), m_partSize(part_size), m_handler(filename)
     {
         //load(m_filename, channel);
         m_handler.readHeader(m_header);
@@ -48,6 +48,10 @@ namespace Aquila
     {
     }
 
+    void WaveFile::load()
+    {
+        load(m_filename, m_channel);
+    }
     /**
      * Reads the header and channel data from given .wav file.
      *

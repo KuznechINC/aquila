@@ -64,6 +64,7 @@ namespace Aquila
                           StereoChannel channel = LEFT);
         ~WaveFile();
 
+        void load();
         void load(const std::string& filename, StereoChannel channel);
         std::vector<std::vector<double>> load_next();
         static void save(const SignalSource& source, const std::string& file);
@@ -160,6 +161,7 @@ namespace Aquila
          * Full path of the .wav file.
          */
         std::string m_filename;
+        StereoChannel m_channel;
 
         /**
          * Header structure.
