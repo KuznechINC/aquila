@@ -28,6 +28,7 @@ namespace Aquila
     WaveFile::WaveFile(const std::string& filename, StereoChannel channel):
         SignalSource(), m_filename(filename), m_channel(channel), m_partSize(0), m_handler(filename)
     {
+        m_handler.readHeader(m_header);
     }
 
     WaveFile::WaveFile(const std::string& filename, size_t part_size, StereoChannel channel):

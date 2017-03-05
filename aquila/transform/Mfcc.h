@@ -61,8 +61,9 @@ namespace Aquila
          * @param inputSize input length (common to all inputs)
          */
         Mfcc(std::size_t inputSize, int numFilters = 26, double lifterCoeff = 22):
-            m_inputSize(inputSize), m_fft(FftFactory::getFft(inputSize)), m_numFilters(numFilters),
-            m_lifterCoeff(lifterCoeff), m_eps(std::numeric_limits<double>::epsilon())
+            m_inputSize(inputSize), m_numFilters(numFilters),
+            m_lifterCoeff(lifterCoeff), m_eps(std::numeric_limits<double>::epsilon()),
+            m_fft(FftFactory::getFft(inputSize))
         {
         }
 
