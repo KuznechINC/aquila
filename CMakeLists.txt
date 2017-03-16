@@ -1,11 +1,13 @@
-cmake_minimum_required(VERSION 2.8.11)
-project(Aquila CXX)
+cmake_minimum_required(VERSION 3.2)
 
 set(Aquila_VERSION_MAJOR 3)
 set(Aquila_VERSION_MINOR 0)
 set(Aquila_VERSION_PATCH 0)
-set(Aquila_VERSION_SUFFIX "-dev")
-set(Aquila_VERSION "${Aquila_VERSION_MAJOR}.${Aquila_VERSION_MINOR}.${Aquila_VERSION_PATCH}${Aquila_VERSION_SUFFIX}")
+set(Aquila_VERSION "${Aquila_VERSION_MAJOR}.${Aquila_VERSION_MINOR}.${Aquila_VERSION_PATCH}")
+
+project(Aquila
+        LANGUAGES CXX
+        VERSION 3.0.0)
 
 
 ################################################################################
@@ -14,8 +16,8 @@ set(Aquila_VERSION "${Aquila_VERSION_MAJOR}.${Aquila_VERSION_MINOR}.${Aquila_VER
 #
 ################################################################################
 
-option(Aquila_BUILD_EXAMPLES "Build example programs?" ON)
-option(Aquila_BUILD_TESTS "Build test programs?" ON)
+option(Aquila_BUILD_EXAMPLES "Build example programs?" OFF)
+option(Aquila_BUILD_TESTS "Build test programs?" OFF)
 
 ################################################################################
 #
@@ -48,7 +50,7 @@ if (OPENMP_FOUND)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
-find_package( OpenCV REQUIRED )
+find_package( OpenCV REQUIRED core)
 list(APPEND Aquila_LIBRARIES_TO_LINK_WITH ${OpenCV_LIBS})
 
 ################################################################################
@@ -198,6 +200,10 @@ add_library(Aquila STATIC ${Aquila_HEADERS} ${Aquila_SOURCES})
 
 # linking with extra libs
 target_link_libraries(Aquila ${Aquila_LIBRARIES_TO_LINK_WITH})
+target_include_directories(Aquila PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>"
+        #"$<INSTALL_INTERFACE:include/aquila>" #TODO
+        )
 
 # examples
 if(Aquila_BUILD_EXAMPLES)
@@ -239,14 +245,57 @@ endif()
 # Installing
 #
 ################################################################################
+set(config_install_dir "lib/cmake/${PROJECT_NAME}")
+set(include_install_dir "include")
+set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
+
+# Configuration
+set(version_config "${generated_dir}/${PROJECT_NAME}ConfigVersion.cmake")
+set(project_config "${generated_dir}/${PROJECT_NAME}Config.cmake")
+set(targets_export_name "AquilaTargets")
+
+include(CMakePackageConfigHelpers)
+# Configure '<PROJECT-NAME>ConfigVersion.cmake'
+# Note: PROJECT_VERSION is used as a VERSION
+write_basic_package_version_file(
+        "${version_config}" COMPATIBILITY SameMajorVersion
+)
+
+# Configure '<PROJECT-NAME>Config.cmake'
+# Use variables:
+#   * targets_export_name
+#   * PROJECT_NAME
+configure_package_config_file(
+        "cmake/Config.cmake.in"
+        "${project_config}"
+        INSTALL_DESTINATION "${config_install_dir}"
+)
 
 # install the binaries and include files
 install(TARGETS Aquila
+        EXPORT "${targets_export_name}"
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib
-        RUNTIME DESTINATION bin)
+        RUNTIME DESTINATION bin
+        INCLUDES DESTINATION "${include_install_dir}")
+
 install(DIRECTORY aquila/ DESTINATION include/aquila FILES_MATCHING PATTERN "*.h")
-install(FILES CHANGELOG LICENSE README.md DESTINATION share/aquila)
+#install(FILES CHANGELOG LICENSE README.md DESTINATION share/aquila)
+
+# Config
+#   * <prefix>/lib/cmake/Foo/FooConfig.cmake
+#   * <prefix>/lib/cmake/Foo/FooConfigVersion.cmake
+install(
+        FILES "${project_config}" "${version_config}"
+        DESTINATION "${config_install_dir}"
+)
+
+# Config
+#   * <prefix>/lib/cmake/Foo/FooTargets.cmake
+install(
+        EXPORT "${targets_export_name}"
+        DESTINATION "${config_install_dir}"
+)
 
 
 ################################################################################
