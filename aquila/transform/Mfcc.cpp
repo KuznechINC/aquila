@@ -37,9 +37,7 @@ namespace Aquila
      * @return vector of MFCC features of length numFeatures
      */
     std::vector<double> Mfcc::calculate(const SignalSource &source,
-                                        std::size_t numFeatures,
-                                        size_t cur_frame,
-                                        size_t debug_frame)
+                                        std::size_t numFeatures)
     {
         //auto spectrum = m_fft->fft(source.toArray());
 
