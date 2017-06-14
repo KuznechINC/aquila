@@ -67,7 +67,7 @@ namespace Aquila
         m_fs_handle.read(header.data, sizeof(header.data));
         while (!eq(header.data, data_pat))
         {
-            m_fs_handle.seekg(m_fs_handle.tellg()-3);
+            m_fs_handle.seekg((long)m_fs_handle.tellg() - 3);
             m_fs_handle.read(header.data, sizeof(header.data));
         }
         m_fs_handle.read((char*)(&header.WaveSize), sizeof(header.WaveSize));
@@ -207,7 +207,7 @@ namespace Aquila
     void WaveFileHandler::decode16bit(ChannelType& channel, short* data, std::size_t channelSize)
     {
         #pragma omp parallel for
-        for (std::size_t i = 0; i < channelSize; ++i)
+        for (int i = 0; i < channelSize; ++i)
         {
             channel[i] = data[i];
         }
@@ -225,7 +225,7 @@ namespace Aquila
         ChannelType& rightChannel, short* data, std::size_t channelSize)
     {
         #pragma omp parallel for
-        for (std::size_t i = 0; i < channelSize; ++i)
+        for (int i = 0; i < channelSize; ++i)
         {
             leftChannel[i] = data[2*i];
             rightChannel[i] = data[2*i+1];
@@ -244,7 +244,7 @@ namespace Aquila
         // low byte and high byte of a 16b word
         unsigned char lb, hb;
         #pragma omp parallel for private(lb) private(hb)
-        for (std::size_t i = 0; i < channelSize; ++i)
+        for (int i = 0; i < channelSize; ++i)
         {
             splitBytes(data[i / 2], lb, hb);
             // only one channel collects samples
@@ -266,7 +266,7 @@ namespace Aquila
         // low byte and high byte of a 16b word
         unsigned char lb, hb;
         #pragma omp parallel for private(lb) private(hb)
-        for (std::size_t i = 0; i < channelSize; ++i)
+        for (int i = 0; i < channelSize; ++i)
         {
             splitBytes(data[i / 2], lb, hb);
             // left channel is in low byte, right in high
@@ -287,7 +287,7 @@ namespace Aquila
     void WaveFileHandler::encode16bit(const SignalSource& source, short* data, std::size_t dataSize)
     {
         #pragma omp parallel for
-        for (std::size_t i = 0; i < dataSize; ++i)
+        for (int i = 0; i < dataSize; ++i)
         {
             short sample = static_cast<short>(source.sample(i));
             data[i] = sample;
@@ -304,7 +304,7 @@ namespace Aquila
     void WaveFileHandler::encode8bit(const SignalSource& source, short* data, std::size_t dataSize)
     {
         #pragma omp parallel for
-        for (std::size_t i = 0; i < dataSize; ++i)
+        for (int i = 0; i < dataSize; ++i)
         {
             unsigned char sample1 = static_cast<unsigned char>(source.sample(2 * i) + 128);
             unsigned char sample2 = static_cast<unsigned char>(source.sample(2 * i + 1) + 128);

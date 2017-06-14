@@ -204,6 +204,7 @@ target_include_directories(Aquila PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>"
         #"$<INSTALL_INTERFACE:include/aquila>" #TODO
         )
+target_include_directories(Aquila PRIVATE ${OpenCV_INCLUDE_DIRS})		
 
 # examples
 if(Aquila_BUILD_EXAMPLES)
